@@ -7,49 +7,65 @@
       <GltfModel
         ref="earth"
         src="/models/low_poly_earth.gltf"
-        :rotation="{ x: 0, y: 0.5, z: 0 }"
         @error="onError"
         @load="onReady"
-      />
+      >
+      </GltfModel>
     </Scene>
   </Renderer>
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, ref, Ref } from 'vue'
-import { Box, Camera, LambertMaterial, DirectionalLight, HemisphereLight, GltfModel, MeshPublicInterface, PointLight, Renderer, RendererPublicInterface, Scene } from 'troisjs'
-import { DoubleSide, BackSide, MeshLambertMaterial, Vector3, Matrix4, Scene as TScene, Object3D } from 'three'
+import { ref, Ref, onMounted } from 'vue'
+import { Box, Camera, Mesh, BasicMaterial, LambertMaterial, SphereGeometry, DirectionalLight, HemisphereLight, GltfModel, MeshPublicInterface, PointLight, Renderer, RendererPublicInterface, Scene } from 'troisjs'
+import * as THREE from 'three'
 
-const scene = ref(null) as Ref<TScene | null>
-const earth = ref(null) as Ref<any | null>
+const scene = ref(null) as Ref<THREE.Scene | null>
+const renderer = ref(null) as Ref<RendererPublicInterface | null>
+
+const earthTilt = 23.4 * Math.PI / 180; // tilt in radians
 
 function onError(err: any) {
   console.error(err)
 }
 
-function onReady(model: any) {
+function onReady(model: THREE.Group) {
   scene.value!.add(model)
 
-  const waterColor = new MeshLambertMaterial({ color: 0x7DB3E7, side: BackSide, wireframe: false });
-  const earthColor = new MeshLambertMaterial({ color: 0x64E75B, side: DoubleSide, wireframe: false });
-  model.rotateOnAxis(new Vector3( 1,0,0), 0.5)
-  model.traverse((child: any) => {
-    if (child.isMesh) {
-      const asArray = Array.isArray(child.material) ? child.material : [child.material]
-      asArray.forEach((mat: any) => mat.metalness = 0)
-      child.name === 'Sphere004' ? child.material = waterColor : child.material = earthColor
-    }
-  });
+  const meshGroup = model.children[0] as THREE.Group
+  const [meshWater, meshEarth] = meshGroup.children as THREE.Mesh[]
 
-  const { renderer } = earth.value!
-  var tilt = 23.4 * Math.PI / 180; // tilt in radians
-  const [meshWater, meshEarth] = model.children[0].children
-  meshWater.geometry.applyMatrix4(new Matrix4().makeRotationZ(-tilt));
-  meshEarth.geometry.applyMatrix4(new Matrix4().makeRotationZ(-tilt));
-  const earthAxis = new Vector3(Math.sin(-tilt), Math.cos(-tilt), 0).normalize();
-  renderer.onBeforeRender(() => {
+  // Material color
+  const waterColor = new THREE.MeshLambertMaterial({ color: 0x7DB3E7, side: THREE.BackSide });
+  const earthColor = new THREE.MeshLambertMaterial({ color: 0x64E75B, side: THREE.DoubleSide });
+  meshWater.material = waterColor
+  meshEarth.material = earthColor
+
+  // Rotate
+  model.rotateOnAxis(new THREE.Vector3(1,0,0), 0.5)
+  meshWater.geometry.applyMatrix4(new THREE.Matrix4().makeRotationZ(-earthTilt));
+  meshEarth.geometry.applyMatrix4(new THREE.Matrix4().makeRotationZ(-earthTilt));
+  const earthAxis = new THREE.Vector3(Math.sin(-earthTilt), Math.cos(-earthTilt), 0).normalize();
+  renderer.value!.onBeforeRender(() => {
     model.children[0].rotateOnAxis(earthAxis, 0.002)
   })
+
+  createNewMoon(5)
+}
+
+function createNewMoon(nbItems: number) {
+  const referential = new THREE.Object3D()
+  for(let i = 0; i < nbItems; i++) {
+    const material = new THREE.MeshLambertMaterial({ color: 0xE0AD12, side: THREE.DoubleSide });
+    const geometry = new THREE.SphereGeometry(0.3, 50, 50);
+    const moonMesh = new THREE.Mesh(geometry, material);
+    moonMesh.castShadow = true
+    moonMesh.receiveShadow = true;
+    moonMesh.position.set(Math.cos(i * 2*Math.PI/nbItems) * 2, 0, - Math.sin(i * 2*Math.PI/nbItems) * 2);
+    referential.add(moonMesh)
+  }
+  referential.rotateOnAxis(new THREE.Vector3(Math.sin(earthTilt), Math.cos(earthTilt), 0), 10)
+  scene.value!.add(referential)
 }
 </script>
 
