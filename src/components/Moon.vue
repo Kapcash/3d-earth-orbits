@@ -1,7 +1,7 @@
 <template> 
   <Mesh :props="{ name: 'moon' }" cast-shadow receive-shadow :position="position">
     <SphereGeometry :radius="0.3" :width-segments="50" :height-segments="50" />
-    <LambertMaterial color="#E0AD12" />
+    <LambertMaterial :color="randomColor" />
   </Mesh>
 </template>
 
@@ -22,4 +22,6 @@ const position = computed(() => {
     z: 0,
   }
 })
+
+const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).toString()
 </script>
