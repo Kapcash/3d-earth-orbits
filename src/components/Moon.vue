@@ -1,5 +1,5 @@
 <template> 
-  <Mesh cast-shadow receive-shadow :position="position">
+  <Mesh :props="{ name: 'moon' }" cast-shadow receive-shadow :position="position">
     <SphereGeometry :radius="0.3" :width-segments="50" :height-segments="50" />
     <LambertMaterial color="#E0AD12" />
   </Mesh>
