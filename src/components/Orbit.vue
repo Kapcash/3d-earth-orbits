@@ -1,8 +1,8 @@
 <template> 
   <Group ref="orbit">
-    <Mesh v-if="DEBUG">
-      <PlaneGeometry :width="10" :height="10" />
-      <LambertMaterial color="0x7eb3e7" :props="{ opacity: 0.5, transparent: true }" />
+    <Mesh :props="{ name: 'OrbitPlane' }" :on-pointer-move="onPointerMove" :on-pointer-down="onPointerDown" :on-pointer-up="onPointerUp">
+      <PlaneGeometry :width="7" :height="7" />
+      <LambertMaterial :props="{ opacity: DEBUG ? 0.5 : 0, transparent: true }" />
     </Mesh>
     <slot />
   </Group>
@@ -24,24 +24,31 @@ onMounted(() => {
   orbit.value!.group.rotateOnAxis(axis, 1)
   
   renderer.onBeforeRender(() => {
-    orbit.value!.group.rotateOnAxis(new THREE.Vector3(0, 0, 1), 0.002)
+    // orbit.value!.group.rotateZ(0.002)
   })
 
   const moons = orbit.value!.group.children.filter((mesh: THREE.Mesh) => mesh.name === 'moon')
   useHighlight(renderer, moons)
 
-  canvas.addEventListener('pointermove', onPointerMove);
   canvas.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointerup', onPointerUp);
   canvas.addEventListener('pointerleave', onPointerUp);
 })
 
 let dragging = false
+let previousPoint: THREE.Vector3 | null = null
+const referentiel = new THREE.Vector3(1, 0, 0)
 
-function onPointerMove() {
-  const orbitGroup = orbit.value!.group
+function onPointerMove(evt: any) {
+  const orbitGroup = orbit.value!.group as THREE.Group
+  previousPoint = evt.intersect.point
+  const pointingAngle = previousPoint!.angleTo(referentiel)
+  // console.log('rad:', pointingAngle, 'deg:', pointingAngle * 180/Math.PI, 'vector', previousPoint)
+
   if (dragging) {
-    orbitGroup.rotateOnAxis(new THREE.Vector3(0, 0, 1), 0.005)
+    const angle = previousPoint!.y < 0 ? Math.PI - pointingAngle : pointingAngle
+    console.log('angle', angle)
+    orbitGroup.rotation.z = angle
   }
 }
 
