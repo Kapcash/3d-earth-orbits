@@ -1,6 +1,6 @@
 <template>
-  <Renderer ref="renderer" antialias :orbit-ctrl="{ enableDamping: true }" resize="window">
-    <Camera :position="{ z: 7, y: 3, x: 10 }" />
+  <Renderer ref="renderer" antialias :orbit-ctrl="{ enableDamping: true, enabled: false }" resize="window">
+    <Camera :position="{ z: 5, y: 3, x: 5 }" />
     <Scene ref="scene">
       <HemisphereLight cast-shadow color="#ffffbb" :intensity="0.5" />
       <PointLight cast-shadow :position="{ y: 50, z: 50 }" :intensity="1" />
@@ -15,19 +15,17 @@
 
 <script lang="ts" setup>
 import { ref, Ref, onMounted } from 'vue'
-import { Camera, HemisphereLight, PointLight, Renderer, RendererPublicInterface, Scene } from 'troisjs'
+import { Camera, HemisphereLight, PointLight, Renderer, Scene } from 'troisjs'
 import * as THREE from 'three'
-import { useDebug } from './use3d'
+import { DEBUG } from './use3d'
 import Moon from './components/Moon.vue'
 import Orbit from './components/Orbit.vue'
 import Earth from './components/Earth.vue'
 
-const scene: Ref<THREE.Scene | null> = ref(null)
-
-const debug = useDebug(false)
+const scene: Ref<typeof Scene | null> = ref(null)
 
 onMounted(() => {
-  if (debug.value) {
+  if (DEBUG) {
     scene.value!.add(new THREE.GridHelper(10, 50));
   }
 })

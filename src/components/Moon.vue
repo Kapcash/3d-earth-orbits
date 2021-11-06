@@ -6,9 +6,8 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, computed } from 'vue'
-import { RendererInjectionKey, SceneInjectionKey, SphereGeometry, Mesh, LambertMaterial } from 'troisjs'
-import * as THREE from 'three'
+import { computed } from 'vue'
+import { SphereGeometry, Mesh, LambertMaterial } from 'troisjs'
 
 const { index, nbMoons } = defineProps({
   index: { type: Number, required: true },
