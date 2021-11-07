@@ -1,8 +1,8 @@
 <template> 
   <Group ref="orbit">
-    <Mesh :props="{ name: 'OrbitPlane' }" :on-pointer-move="onPointerMove" :on-pointer-down="onPointerDown" :on-pointer-up="onPointerUp">
+    <Mesh ref="orbitPlane" :props="{ name: 'OrbitPlane' }" :on-pointer-move="onPointerMove">
       <PlaneGeometry :width="7" :height="7" />
-      <LambertMaterial :props="{ opacity: DEBUG ? 0.5 : 0, transparent: true }" />
+      <LambertMaterial :props="{ side: 2, opacity: DEBUG ? 0.5 : 0, transparent: true }" />
     </Mesh>
     <slot />
   </Group>
@@ -12,16 +12,21 @@
 import { inject, ref, Ref, onMounted } from 'vue'
 import { RendererInjectionKey, Group, Mesh, PlaneGeometry, LambertMaterial } from 'troisjs'
 import * as THREE from 'three'
-import { DEBUG, earthTilt, useHighlight } from '../use3d';
+import { DEBUG, earthTilt, useHighlight, useDragging, useMouse } from '../use3d';
 
-const axis = new THREE.Vector3(Math.sin(earthTilt), 0, Math.cos(earthTilt))
 const renderer = inject(RendererInjectionKey)!
-const canvas = renderer.renderer.domElement
-
 const orbit: Ref<typeof Group | null> = ref(null)
+const orbitPlane: Ref<typeof Mesh | null> = ref(null)
+let previousZ = 0
+
+renderer.canvas!.addEventListener('pointerdown', onPointerDown)
+renderer.canvas!.addEventListener('pointerup', onPointerUp)
 
 onMounted(() => {
-  orbit.value!.group.rotateOnAxis(axis, 1)
+  const orbitGroup = (orbit.value!.group as THREE.Group)
+  orbitGroup.rotateY(earthTilt);
+  orbitGroup.rotateX(earthTilt);
+  previousZ = orbitGroup.rotation.z
   
   renderer.onBeforeRender(() => {
     // orbit.value!.group.rotateZ(0.002)
@@ -29,34 +34,50 @@ onMounted(() => {
 
   const moons = orbit.value!.group.children.filter((mesh: THREE.Mesh) => mesh.name === 'moon')
   useHighlight(renderer, moons)
-
-  canvas.addEventListener('pointerdown', onPointerDown);
-  canvas.addEventListener('pointerup', onPointerUp);
-  canvas.addEventListener('pointerleave', onPointerUp);
 })
 
-let dragging = false
+let dragging = useDragging()
+const referentiel = new THREE.Vector3(Math.cos(earthTilt) * Math.PI, 0, -Math.sin(earthTilt) * Math.PI)
+
+const ray = new THREE.Raycaster();
+const mouse = useMouse(renderer.canvas);
+
 let previousPoint: THREE.Vector3 | null = null
-const referentiel = new THREE.Vector3(1, 0, 0)
 
 function onPointerMove(evt: any) {
   const orbitGroup = orbit.value!.group as THREE.Group
   previousPoint = evt.intersect.point
   const pointingAngle = previousPoint!.angleTo(referentiel)
-  // console.log('rad:', pointingAngle, 'deg:', pointingAngle * 180/Math.PI, 'vector', previousPoint)
 
-  if (dragging) {
-    const angle = previousPoint!.y < 0 ? Math.PI - pointingAngle : pointingAngle
-    console.log('angle', angle)
-    orbitGroup.rotation.z = angle
+  if (dragging.value) {
+    const sign = previousPoint!.y < 0 ? -1 : 1
+    orbitGroup.rotation.z += (pointingAngle - previousZ) * sign
+    previousZ = pointingAngle
   }
 }
 
-function onPointerDown() {
-  dragging = true
+function onPointerDown(evt: any) {
+  ray.setFromCamera(mouse, renderer.camera!)
+  const intersects = ray.intersectObjects([orbit.value!.group.children[0]], false);
+
+  if (intersects.length > 0) {
+    previousZ = intersects[0].point.angleTo(referentiel)
+    dragging.value = true
+  }
 }
 
-function onPointerUp() {
-  dragging = false
+function onPointerUp(evt: any) {
+  dragging.value = false
+}
+
+if (DEBUG) {
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+  const points = [
+    new THREE.Vector3(0, 0, 0),
+    referentiel,
+  ];
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const line = new THREE.Line(geometry, material);
+  renderer.scene!.add(line)
 }
 </script>

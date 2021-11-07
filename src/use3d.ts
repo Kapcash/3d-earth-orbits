@@ -1,5 +1,6 @@
 import { RendererPublicInterface } from 'troisjs'
 import * as THREE from 'three';
+import { ref } from 'vue';
 
 export const DEBUG = true
 export const earthTilt = 23.4 * Math.PI / 180; // tilt in radians
@@ -15,6 +16,11 @@ export function useMouse(wrapper: HTMLCanvasElement) {
   wrapper.addEventListener('mousemove', onMouseMove)
 
   return mouse
+}
+
+let dragging = ref(false)
+export function useDragging() {
+  return dragging
 }
 
 

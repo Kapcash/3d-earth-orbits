@@ -10,7 +10,7 @@
 
 <script lang="ts" setup>
 import { inject } from 'vue'
-import { GltfModel, RendererInjectionKey, SceneInjectionKey } from 'troisjs'
+import { GltfModel, RendererInjectionKey } from 'troisjs'
 import * as THREE from 'three'
 import { earthTilt } from '../use3d'
 
@@ -32,8 +32,9 @@ function onReady(model: THREE.Group) {
 
   // Rotate
   model.rotateOnAxis(new THREE.Vector3(1,0,0), 0.5)
-  meshWater.geometry.applyMatrix4(new THREE.Matrix4().makeRotationZ(-earthTilt));
-  meshEarth.geometry.applyMatrix4(new THREE.Matrix4().makeRotationZ(-earthTilt));
+  const earthTiltRotation = new THREE.Matrix4().makeRotationZ(-earthTilt)
+  meshWater.geometry.applyMatrix4(earthTiltRotation);
+  meshEarth.geometry.applyMatrix4(earthTiltRotation);
   const earthAxis = new THREE.Vector3(Math.sin(-earthTilt), Math.cos(-earthTilt), 0).normalize();
 
   renderer!.onBeforeRender(() => {

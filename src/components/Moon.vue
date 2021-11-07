@@ -23,5 +23,5 @@ const position = computed(() => {
   }
 })
 
-const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).toString()
+const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16)
 </script>
