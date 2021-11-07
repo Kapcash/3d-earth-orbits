@@ -22,38 +22,3 @@ let dragging = ref(false)
 export function useDragging() {
   return dragging
 }
-
-
-export function useHighlight(renderer: RendererPublicInterface, objects: THREE.Object3D[]) {
-  const mouse = useMouse(renderer.canvas!)
-  const ray = new THREE.Raycaster();
-
-  let intersectedObject: any | null = null
-  const HIGHLIGHT_COLOR = 0xffff00
-
-  function restorePreviousIntersectedColor() {
-    if (intersectedObject) {
-      intersectedObject.material.color.setHex(intersectedObject.currentHex);
-    }
-  }
-  
-  renderer.onBeforeRender(() => {
-    ray.setFromCamera(mouse, renderer.camera!)
-    const intersects = ray.intersectObjects(objects, true);
-  
-    if (intersects.length > 0) {
-      const firstIntersectedObject = intersects[0].object
-  
-      if (firstIntersectedObject === intersectedObject) { return; }
-  
-      restorePreviousIntersectedColor()
-  
-      intersectedObject = firstIntersectedObject;
-      intersectedObject.currentHex = intersectedObject.material.color.getHex();
-      intersectedObject.material.color.setHex(HIGHLIGHT_COLOR);
-    } else {
-      restorePreviousIntersectedColor()
-      intersectedObject = null;
-    }
-  })
-}

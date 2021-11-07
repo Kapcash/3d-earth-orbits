@@ -12,7 +12,7 @@
 import { inject, ref, Ref, onMounted } from 'vue'
 import { RendererInjectionKey, Group, Mesh, PlaneGeometry, LambertMaterial } from 'troisjs'
 import * as THREE from 'three'
-import { DEBUG, earthTilt, useHighlight, useDragging, useMouse } from '../use3d';
+import { DEBUG, earthTilt, useDragging, useMouse } from '../use3d';
 
 const renderer = inject(RendererInjectionKey)!
 const orbit: Ref<typeof Group | null> = ref(null)
@@ -29,11 +29,8 @@ onMounted(() => {
   previousZ = orbitGroup.rotation.z
   
   renderer.onBeforeRender(() => {
-    // orbit.value!.group.rotateZ(0.002)
+    orbit.value!.group.rotateZ(0.002)
   })
-
-  const moons = orbit.value!.group.children.filter((mesh: THREE.Mesh) => mesh.name === 'moon')
-  useHighlight(renderer, moons)
 })
 
 let dragging = useDragging()

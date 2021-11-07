@@ -24,7 +24,6 @@ import Earth from './components/Earth.vue'
 
 const scene: Ref<typeof Scene | null> = ref(null)
 const renderer: Ref<RendererPublicInterface | null> = ref(null)
-const isDragging = useDragging()
 
 onMounted(() => {
   if (DEBUG) {
