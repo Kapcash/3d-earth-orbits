@@ -17,7 +17,9 @@ import { DEBUG, earthTilt, useDragging, useMouse } from '../use3d';
 const renderer = inject(RendererInjectionKey)!
 const orbit: Ref<typeof Group | null> = ref(null)
 const orbitPlane: Ref<typeof Mesh | null> = ref(null)
+let previousAngle = 0
 let previousZ = 0
+let direction = 1
 
 renderer.canvas!.addEventListener('pointerdown', onPointerDown)
 renderer.canvas!.addEventListener('pointerup', onPointerUp)
@@ -26,7 +28,6 @@ onMounted(() => {
   const orbitGroup = (orbit.value!.group as THREE.Group)
   orbitGroup.rotateY(earthTilt);
   orbitGroup.rotateX(earthTilt);
-  previousZ = orbitGroup.rotation.z
   
   renderer.onBeforeRender(() => {
     orbit.value!.group.rotateZ(0.002)
@@ -48,24 +49,44 @@ function onPointerMove(evt: any) {
 
   if (dragging.value) {
     const sign = previousPoint!.y < 0 ? -1 : 1
-    orbitGroup.rotation.z += (pointingAngle - previousZ) * sign
-    previousZ = pointingAngle
+    orbitGroup.rotation.z += (pointingAngle - previousAngle) * sign
+    direction = orbitGroup.rotation.z < previousZ ? -1 : 1
+    previousAngle = pointingAngle
+    previousZ = orbitGroup.rotation.z
   }
 }
+
+let alpha = 0.1
 
 function onPointerDown(evt: any) {
   ray.setFromCamera(mouse, renderer.camera!)
   const intersects = ray.intersectObjects([orbit.value!.group.children[0]], false);
 
   if (intersects.length > 0) {
-    previousZ = intersects[0].point.angleTo(referentiel)
+    previousAngle = intersects[0].point.angleTo(referentiel)
     dragging.value = true
   }
 }
 
+let origin: THREE.Vector3;
+let target: THREE.Vector3;
 function onPointerUp(evt: any) {
+  alpha = 0.1
   dragging.value = false
+  const orbitGroup = orbit.value!.group as THREE.Group
+  origin = new THREE.Vector3(orbitGroup.rotation.x, orbitGroup.rotation.y, orbitGroup.rotation.z);
+  target = new THREE.Vector3(origin.x, origin.y, origin.z + (Math.PI * direction))
 }
+
+renderer.onBeforeRender(() => {
+  if (origin && !origin.equals(target)) {
+    origin.lerp(target, alpha)
+    orbit.value!.group.rotation.z = origin.z
+    if (Math.abs(target.z - origin.z) < 0.05) {
+      alpha = 1
+    }
+  }
+})
 
 if (DEBUG) {
   const material = new THREE.LineBasicMaterial({ color: 0xff0000 });

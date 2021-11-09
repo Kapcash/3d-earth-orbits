@@ -17,7 +17,7 @@
 import { ref, Ref, onMounted } from 'vue'
 import { Camera, HemisphereLight, PointLight, Renderer, RendererPublicInterface, Scene } from 'troisjs'
 import * as THREE from 'three'
-import { DEBUG, useDragging } from './use3d'
+import { DEBUG } from './use3d'
 import Moon from './components/Moon.vue'
 import Orbit from './components/Orbit.vue'
 import Earth from './components/Earth.vue'

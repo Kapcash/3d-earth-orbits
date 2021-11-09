@@ -2,7 +2,7 @@ import { RendererPublicInterface } from 'troisjs'
 import * as THREE from 'three';
 import { ref } from 'vue';
 
-export const DEBUG = true
+export const DEBUG = false
 export const earthTilt = 23.4 * Math.PI / 180; // tilt in radians
 
 export function useMouse(wrapper: HTMLCanvasElement) {
