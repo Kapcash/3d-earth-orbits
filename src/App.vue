@@ -7,7 +7,7 @@
       <Earth />
 
       <Orbit ref="orbit">
-        <Moon v-for="i in 5" :index="i" :nb-moons="5" />
+        <Moon v-for="i in 5" :index="i" :nb-moons="5" :model="i === 1 ? 'music' : i === 2 ? 'star' : undefined" />
       </Orbit>
     </Scene>
   </Renderer>
@@ -34,6 +34,12 @@ onMounted(() => {
 </script>
 
 <style>
+h1 {
+  position: absolute;
+  color: white;
+  top: 10px;
+  left: 10px;
+}
 body, html {
   margin: 0;
 }

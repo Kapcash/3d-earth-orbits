@@ -4,8 +4,7 @@
     src="/models/low_poly_earth.gltf"
     @error="onError"
     @load="onReady"
-  >
-  </GltfModel>
+  />
 </template>
 
 <script lang="ts" setup>
