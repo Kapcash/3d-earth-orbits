@@ -50,7 +50,7 @@ let dragging = useDragging()
 const referentiel = new THREE.Vector3(Math.cos(earthTilt) * Math.PI, 0, -Math.sin(earthTilt) * Math.PI)
 
 const ray = new THREE.Raycaster();
-const mouse = useMouse(renderer.canvas);
+const mouse = useMouse(renderer.canvas, true);
 
 let previousPoint: THREE.Vector3 | null = null
 
