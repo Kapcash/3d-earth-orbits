@@ -7,7 +7,15 @@
       <Earth />
 
       <Orbit ref="orbit">
-        <Moon v-for="(model, i) in modelNames" :index="i" :nb-moons="5" :model="model.model" :description="model.description" />
+        <Moon
+          v-for="(model, i) in modelNames"
+          :key="model.name"
+          :index="i"
+          :nb-moons="5"
+          :model="model.name"
+          :description="model.description"
+          :disabled="model.disabled"
+        />
       </Orbit>
     </Scene>
     <span class="tooltip" :style="`top: ${tooltip.y}px; left: ${tooltip.x}px; opacity: ${tooltip.active ? 1 : 0}`">{{ tooltip.text }}</span>
@@ -34,11 +42,11 @@ onMounted(() => {
 })
 
 const modelNames = [
-  { model: 'music', description: "I'm a guitarist and a drummer!" },
-  { model: 'computer', description: 'I am graduated of an Engineer Computer Science Degree', },
-  { model: 'gym', description: 'Get in shape' },
-  { model: 'minecraft', description: 'Gamer' },
-  { model: 'folder-fav', description: 'Dunno' },
+  { name: 'music', description: "I'm a guitarist and a drummer!" },
+  { name: 'computer', description: 'I am graduated of an Engineer Computer Science Degree', },
+  { name: 'gym', description: 'Get in shape', disabled: true },
+  { name: 'minecraft', description: 'Gamer' },
+  { name: 'folder-fav', description: 'Dunno', disabled: true },
 ]
 </script>
 

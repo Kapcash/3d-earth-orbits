@@ -28,12 +28,14 @@ const renderer = inject(RendererInjectionKey)
 
 const moon: Ref<typeof Mesh | null> = ref(null)
 const rotate = reactive({ x: 0, y: 0, z: 0 })
+const DISABLED_METALNESS = 0.8
 
-const { index, nbMoons, model, description } = defineProps({
+const { index, nbMoons, model, description, disabled } = defineProps({
   index: { type: Number, required: true },
   nbMoons: { type: Number, required: true },
   model: { type: String, required: false },
   description: { type: String, default: 'Testing' },
+  disabled: { type: Boolean, default: false },
 });
 
 const position = computed(() => {
@@ -47,7 +49,7 @@ const position = computed(() => {
 
 const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16)
 
-const HIGHLIGHT_COLOR = 0xffff00
+const HIGHLIGHT_COLOR = disabled ? 0xff0000 : 0xffff00
 const mouse = useMouse(renderer!.canvas)
 
 function setTooltip() {
@@ -70,10 +72,10 @@ function hovering(evt: any) {
     const material = (obj! as THREE.Mesh).material as THREE.MeshLambertMaterial
     if (evt.over) {
       // @ts-ignore
-      obj.previousColor ||= material.color.clone()
+      obj.previousColor ||= material.color.getHex()
     }
     // @ts-ignore
-    material.color.set(evt.over ? HIGHLIGHT_COLOR : obj.previousColor);
+    material.color.setHex(evt.over ? HIGHLIGHT_COLOR : obj.previousColor);
   })
 }
 
@@ -106,6 +108,9 @@ function onMoonModelLoaded(model: THREE.Group) {
   meshes.forEach(mesh => {
     renderer!.three.addIntersectObject(mesh)
     mesh.scale.multiplyScalar(0.5);
+    if (disabled) {
+      (mesh.material as THREE.MeshStandardMaterial).metalness = DISABLED_METALNESS
+    }
   })
 }
 </script>
