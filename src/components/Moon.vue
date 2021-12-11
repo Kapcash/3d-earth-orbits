@@ -48,8 +48,6 @@ const position = computed(() => {
 })
 
 const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16)
-
-const HIGHLIGHT_COLOR = disabled ? 0xff0000 : 0xffff00
 const mouse = useMouse(renderer!.canvas)
 
 function setTooltip() {
@@ -58,24 +56,28 @@ function setTooltip() {
   tooltip.text = description
   tooltip.active = true
 }
-function resetTooltip() {
+function resetTooltip(evt: any) {
   tooltip.active = false
 }
 
 function hovering(evt: any) {
-  let object3d: Array<THREE.Object3D> = [evt.component.$.ctx.o3d as THREE.Object3D]
+  if (disabled) { return; }
+
+  const object3dTarget = evt.component.$.ctx.o3d as THREE.Object3D
+  let object3d: Array<THREE.Object3D> = [object3dTarget]
   if (object3d[0].name !== 'moon') {
     object3d = getDeepMesh(object3d[0] as THREE.Group)
   }
 
-  object3d.forEach((obj) => {
-    const material = (obj! as THREE.Mesh).material as THREE.MeshLambertMaterial
+  object3d.forEach((mesh) => {
+    const material = (mesh! as THREE.Mesh).material as THREE.MeshLambertMaterial
     if (evt.over) {
       // @ts-ignore
-      obj.previousColor ||= material.color.getHex()
+      material.color.setHex(material.hoverColor)
+    } else {
+      // @ts-ignore
+      material.color.setHex(mesh.material.previousColor);
     }
-    // @ts-ignore
-    material.color.setHex(evt.over ? HIGHLIGHT_COLOR : obj.previousColor);
   })
 }
 
@@ -107,9 +109,14 @@ function onMoonModelLoaded(model: THREE.Group) {
   const meshes = getDeepMesh(model)
   meshes.forEach(mesh => {
     renderer!.three.addIntersectObject(mesh)
-    mesh.scale.multiplyScalar(0.5);
+    mesh.scale.multiplyScalar(0.5)
+    const meshMaterial = (mesh.material as THREE.MeshStandardMaterial)
+    // @ts-ignore
+    mesh.material.previousColor = meshMaterial.color.getHex()
+    // @ts-ignore
+    mesh.material.hoverColor = meshMaterial.color.clone().offsetHSL(0, 0.2, -0.2).getHex()
     if (disabled) {
-      (mesh.material as THREE.MeshStandardMaterial).metalness = DISABLED_METALNESS
+      meshMaterial.metalness = DISABLED_METALNESS
     }
   })
 }

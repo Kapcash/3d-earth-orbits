@@ -66,6 +66,7 @@ canvas {
 
 #app {
   position: relative;
+  font-family: Helvetica, sans-serif;
 }
 .tooltip {
   position: absolute;
