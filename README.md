@@ -1,4 +1,8 @@
-# Vue 3 + Typescript + Vite + TroisJS
+# 3D Earth Orbits
 
-This template should help get you started developing with Vue 3 and Typescript in Vite.
+> Warning, this is still a work in progress. Many changes and cleanup to come!
 
+This is a personal project & TroisJS test.
+
+The purpose is to display a low poly earth with "moons" rotating around.
+The moons will be 3D icons representing parts of my life & life goals :)
